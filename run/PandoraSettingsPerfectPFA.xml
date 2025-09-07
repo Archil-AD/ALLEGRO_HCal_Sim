@@ -1,0 +1,27 @@
+<!-- Pandora settings xml file -->
+
+<pandora>
+    <!-- GLOBAL SETTINGS -->
+    <IsMonitoringEnabled>true</IsMonitoringEnabled>
+    <ShouldDisplayAlgorithmInfo>false</ShouldDisplayAlgorithmInfo>
+    <ShouldCollapseMCParticlesToPfoTarget>true</ShouldCollapseMCParticlesToPfoTarget>
+
+    <!-- PLUGIN SETTINGS -->
+    <!--HadronicEnergyCorrectionPlugins>SoftwareCompensation</HadronicEnergyCorrectionPlugins-->
+    <EmShowerPlugin>LCEmShowerId</EmShowerPlugin>
+    <PhotonPlugin>LCPhotonId</PhotonPlugin>
+    <ElectronPlugin>LCElectronId</ElectronPlugin>
+    <MuonPlugin>LCMuonId</MuonPlugin>
+
+    <!-- ALGORITHM SETTINGS -->
+    <!--algorithm type="LCEventWriting">
+      <EventFileName>test_perfectPFA_events_ALLEGRO.pndr</EventFileName>
+      <ShouldWriteGeometry>true</ShouldWriteGeometry>
+      <GeometryFileName>test_perfectPFA_geo_ALLEGRO.pndr</GeometryFileName>
+    </algorithm-->
+
+    <algorithm type = "PerfectParticleFlow">
+        <OutputPfoListName>PerfectPfos</OutputPfoListName>
+        <OutputClusterListName>PerfectPfoClusters</OutputClusterListName>
+    </algorithm>
+</pandora>
