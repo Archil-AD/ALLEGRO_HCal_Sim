@@ -27,7 +27,7 @@ dataFolder = "./"                          # directory containing the calibratio
 # - general settings set via CLI
 from k4FWCore.parseArgs import parser
 parser.add_argument("--pandora", action="store_true", help="Run pandora PFA", default=True)
-parser.add_argument("--includeHCal", action="store_true", help="Also digitise HCal hits and create ECAL+HCAL clusters", default=False)
+parser.add_argument("--includeHCal", action="store_true", help="Also digitise HCal hits and create ECAL+HCAL clusters", default=True)
 parser.add_argument("--includeMuon", action="store_true", help="Also digitise muon hits", default=False)
 parser.add_argument("--saveHits", action="store_true", help="Save G4 hits", default=False)
 parser.add_argument("--saveCells", action="store_true", help="Save cell collection", default=True)
@@ -90,8 +90,8 @@ if ecalEndcapSamplingFraction and len(ecalEndcapSamplingFraction) > 0:
 resegmentECalBarrel = False
 
 # - parameters for clustering (could also be made configurable via CLI)
-doSWClustering = True
-doTopoClustering = True
+doSWClustering = False
+doTopoClustering = False
 
 # cluster energy corrections
 # simple parametrisations of up/downstream losses for ECAL-only clusters
@@ -353,10 +353,10 @@ if runHCal:
     from Configurables import CalibrateCaloHitsTool
     # HCAL barrel
     calibHCalBarrel = CalibrateCaloHitsTool(
-        "CalibrateHCalBarrel", invSamplingFraction="29.4202")
+        "CalibrateHCalBarrel", invSamplingFraction="31.17")
     # HCAL endcap
     calibHCalEndcap = CalibrateCaloHitsTool(
-        "CalibrateHCalEndcap", invSamplingFraction="29.4202")  # FIXME: to be updated for ddsim
+        "CalibrateHCalEndcap", invSamplingFraction="31.17")  # FIXME: to be updated for ddsim
 
 # - cell positioning tools
 from Configurables import CellPositionsECalBarrelModuleThetaSegTool
@@ -1146,10 +1146,10 @@ if runPandora:
         "UseDD4hepField": ["1"],
         "MCParticleCollections": ["MCParticle"],
         "ECalCaloHitCollections": [ecalBarrelPositionedCellsName],
-        # "HCalCaloHitCollections": [hcalBarrelPositionedCellsName, hcalEndcapPositionedCellsName],
-        "HCalCaloHitCollections": [hcalBarrelPositionedCellsName],
+        "HCalCaloHitCollections": [hcalBarrelPositionedCellsName, hcalEndcapPositionedCellsName],
+        #"HCalCaloHitCollections": [hcalBarrelPositionedCellsName],
         "MuonCaloHitCollections": [muonBarrelPositionedCellsName],   #  muonEndcapPositionedCellsName],
-        "RelCaloHitCollections": [ecalBarrelLinks, hcalBarrelLinks, muonBarrelLinks],
+        "RelCaloHitCollections": [ecalBarrelLinks, hcalBarrelLinks,hcalEndcapLinks, muonBarrelLinks],
         "TrackCollections": ["TrackCollection"],
         "RelTrackCollections": ["TracksFromGenParticlesAssociation"],
         "TrackSystemName" : [""],  # disable marlin track fitting
@@ -1186,10 +1186,10 @@ if runPandora:
         "UseDD4hepField": ["1"],
         "MCParticleCollections": ["MCParticle"],
         "ECalCaloHitCollections": [ecalBarrelPositionedCellsName],
-        # "HCalCaloHitCollections": [hcalBarrelPositionedCellsName, hcalEndcapPositionedCellsName],
-        "HCalCaloHitCollections": [hcalBarrelPositionedCellsName],
+        "HCalCaloHitCollections": [hcalBarrelPositionedCellsName, hcalEndcapPositionedCellsName],
+        #"HCalCaloHitCollections": [hcalBarrelPositionedCellsName],
         "MuonCaloHitCollections": [muonBarrelPositionedCellsName],   #  muonEndcapPositionedCellsName],
-        "RelCaloHitCollections": [ecalBarrelLinks, hcalBarrelLinks, muonBarrelLinks],
+        "RelCaloHitCollections": [ecalBarrelLinks, hcalBarrelLinks, hcalEndcapLinks, muonBarrelLinks],
         "TrackCollections": ["TrackCollection"],
         "RelTrackCollections": ["TracksFromGenParticlesAssociation"],
         "TrackSystemName" : [""],  # disable marlin track fitting

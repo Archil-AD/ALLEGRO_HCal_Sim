@@ -28,11 +28,14 @@ if __name__ == "__main__":
 
 
   parser = argparse.ArgumentParser(description='Process some integers.')
-  parser.add_argument("--inputDir", dest='input', default="root://128.141.173.81:1094//home/data/FCC/Reco", required=False, help="Input histograms")
-  parser.add_argument("--particle", dest='particle', default="electron", required=False, help="Particle (electron or pion)")
-  parser.add_argument("--plots",dest='plots', nargs='+', type=int, required=True, help='Options to draw different plots')
+  parser.add_argument("--inputDir", dest='inputDir', default="/afs/cern.ch/user/a/adurglis/mount/data/FCC/Reco/HighStat", required=False, help="Input histograms")
+  parser.add_argument("--particle", dest='particle', nargs='+', type=str, default=['electron','pion','K0L'], required=False, help="Particle (electron or pion)")
+  parser.add_argument("--energy",dest='energy', nargs='+', default=[2, 3, 4, 5, 7, 10, 13, 20, 30, 50, 80, 100, 150, 180], type=int, required=False, help='Energy')
+  parser.add_argument("--theta",dest='theta', nargs='+', default=[88, 83, 78, 73, 68, 63, 58, 53, 48, 43, 38, 33, 28], type=int, required=False, help='Theta')
+  parser.add_argument("--plot",dest='plot', nargs='+', type=int, default=[0], required=False, help='Options to draw different plots')
   args = parser.parse_args()
-  plots = args.plots
+  plots = args.plot
+  particles = args.particle
   plotToString = [
    'Draw all plots',                                                               # 0
    'Draw HCal response(resolution) vs energy plots',                               # 1
@@ -57,17 +60,19 @@ if __name__ == "__main__":
     for theta in [68,38]:
       graphs = []
       graphs_sigma = []
-      for p in ['electron','pion','K0L']:
-        x  = np.array([2, 3, 4, 5, 7, 10, 13, 20, 30, 50, 80, 100, 150, 180],dtype='float64')
+      for p in particles:
+        x  = np.array(args.energy,dtype='float64')
         ex = np.zeros(len(x),dtype='float64')  # x-errors
         mu = np.zeros(len(x),dtype='float64')
         emu = np.zeros(len(x),dtype='float64')  # y-errors
         sigma  = np.zeros(len(x),dtype='float64')
         esigma = np.zeros(len(x),dtype='float64')
         for energy,bin in zip(x,range(len(x))):
-          # NOTE: electrons are not simulated for Endcap
-          #if theta==38 and p=='electron': continue
-          inputFile = root.TFile.Open('root://128.141.173.81:1094//home/data/FCC/Reco/HighStat/ALLEGRO_HCalOnly_k4run_%s_E%d_theta%s.root'%(p,energy,theta),"read")
+          if not os.path.exists(args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E%d_theta%s.root'%(p,energy,theta)):
+            print('File does not exist',args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E%d_theta%s.root'%(p,energy,theta))
+            continue
+          print('Opening:',args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E%d_theta%s.root'%(p,energy,theta))
+          inputFile = root.TFile.Open(args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E%d_theta%s.root'%(p,energy,theta),"read")
           tree = inputFile.Get('events')
           tree.SetEstimate(-1)
           N = tree.Draw('Sum$(CaloTopoClusters.energy)','','goff')
@@ -157,15 +162,19 @@ if __name__ == "__main__":
   if 2 in plots or 0 in plots:
     graphs = []
     graphs_sigma = []
-    for p in ['electron','pion','K0L']:
-      x  = np.array([88, 83, 78, 73, 68, 63, 58, 53, 48, 43, 38, 33, 28],dtype='float64')
+    for p in particles:
+      x  = np.array(args.theta,dtype='float64')
       ex = np.zeros(len(x),dtype='float64')  # x-errors
       mu = np.zeros(len(x),dtype='float64')
       emu = np.zeros(len(x),dtype='float64')  # y-errors
       sigma  = np.zeros(len(x),dtype='float64')
       esigma = np.zeros(len(x),dtype='float64')
       for theta,bin in zip(x,range(len(x))):
-        inputFile = root.TFile.Open('root://128.141.173.81:1094//home/data/FCC/Reco/HighStat/ALLEGRO_HCalOnly_k4run_%s_E100_theta%d.root'%(p,theta),"read")
+        if not os.path.exists(args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E100_theta%d.root'%(p,theta)):
+          print('File does not exist',args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E100_theta%d.root'%(p,theta))
+          continue
+        print('Opening:',args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E100_theta%d.root'%(p,theta))
+        inputFile = root.TFile.Open(args.inputDir+'/ALLEGRO_HCalOnly_k4run_%s_E100_theta%d.root'%(p,theta),"read")
         tree = inputFile.Get('events')
         tree.SetEstimate(-1)
         N = tree.Draw('Sum$(CaloTopoClusters.energy)','','goff')
@@ -245,14 +254,18 @@ if __name__ == "__main__":
       graphs = []
       graphs_sigma = []
       for p in ['pion','K0L']:
-        x  = np.array([2, 3, 4, 5, 7, 10, 13, 20, 30, 50, 80, 100, 150, 180],dtype='float64')
+        x  = np.array(args.energy,dtype='float64')
         ex = np.zeros(len(x),dtype='float64')  # x-errors
         mu = np.zeros(len(x),dtype='float64')
         emu = np.zeros(len(x),dtype='float64')  # y-errors
         sigma  = np.zeros(len(x),dtype='float64')
         esigma = np.zeros(len(x),dtype='float64')
         for energy,bin in zip(x,range(len(x))):
-          inputFile = root.TFile.Open('root://128.141.173.81:1094//home/data/FCC/Reco/HighStat/ALLEGRO_k4run_%s_E%d_theta%s.root'%(p,energy,theta),"read")
+          if not os.path.exists(args.inputDir+'/ALLEGRO_k4run_%s_E%d_theta%s.root'%(p,energy,theta)):
+            print('File does not exist',args.inputDir+'/ALLEGRO_k4run_%s_E%d_theta%s.root'%(p,energy,theta))
+            continue
+          print('Opening:',args.inputDir+'/ALLEGRO_k4run_%s_E%d_theta%s.root'%(p,energy,theta))
+          inputFile = root.TFile.Open(args.inputDir+'/ALLEGRO_k4run_%s_E%d_theta%s.root'%(p,energy,theta),"read")
           tree = inputFile.Get('events')
           tree.SetEstimate(-1)
           N = tree.Draw('Sum$(CaloTopoClusters.energy)','','goff')
@@ -353,17 +366,19 @@ if __name__ == "__main__":
   if 4 in plots or 0 in plots:
     graphs = []
     graphs_sigma = []
-    for p in ['pion','K0L']:
-      x  = np.array([88, 83, 78, 73, 68, 63, 58, 53, 48, 43, 38, 33, 28],dtype='float64')
-#      x  = np.array([88, 83, 78, 73, 68, 63, 58],dtype='float64')
-
+    for p in particles:
+      x  = np.array(args.theta,dtype='float64')
       ex = np.zeros(len(x),dtype='float64')  # x-errors
       mu = np.zeros(len(x),dtype='float64')
       emu = np.zeros(len(x),dtype='float64')  # y-errors
       sigma  = np.zeros(len(x),dtype='float64')
       esigma = np.zeros(len(x),dtype='float64')
       for theta,bin in zip(x,range(len(x))):
-        inputFile = root.TFile.Open('root://128.141.173.81:1094//home/data/FCC/Reco/HighStat/ALLEGRO_k4run_%s_E100_theta%d.root'%(p,theta),"read")
+        if not os.path.exists(args.inputDir+'/ALLEGRO_k4run_%s_E100_theta%d.root'%(p,theta)):
+          print('File does not exist',args.inputDir+'/ALLEGRO_k4run_%s_E100_theta%d.root'%(p,theta))
+          continue
+        print('Opening:',args.inputDir+'/ALLEGRO_k4run_%s_E100_theta%d.root'%(p,theta))
+        inputFile = root.TFile.Open(args.inputDir+'/ALLEGRO_k4run_%s_E100_theta%d.root'%(p,theta),"read")
         tree = inputFile.Get('events')
         tree.SetEstimate(-1)
         N = tree.Draw('Sum$(CaloTopoClusters.energy)','','goff')
@@ -408,7 +423,7 @@ if __name__ == "__main__":
         Helpers.plot(hist,opt)
         mu[bin] = mu[bin]/100.
         emu[bin] = emu[bin]/100.
-        # end of energy bin loop
+        # end of theta bin loop
       gr = root.TGraphErrors(len(x), x, mu, ex, emu)
       gr.SetTitle(particle[p])
       graphs.append(gr)

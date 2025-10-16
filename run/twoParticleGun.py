@@ -1,4 +1,10 @@
 #!/usr/bin/python
+"""
+Author: Archil Durglishvili
+Created: 2025-09-01
+Description: This a simple macro to generate two-particle events with a fixed opening angle in EDM4hep format.
+             It produces a root file with the MCParticles collection that can be passed to the ddsim for the Full Simulation.
+"""
 import argparse
 import podio
 import podio.root_io
@@ -13,8 +19,8 @@ PDG = {'pi+':211, 'pi-':-211, 'kaon0L':130, 'kaon0S':310, 'kaon0':311}
 
 
 parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument("--output", dest='output', default="TwoParticlesEvent.root", required=False, help="Output file name")
-parser.add_argument("--particles", dest='particles', nargs='+', type=str, default=['kaon0L','pi-'], required=False, help="Particles (pi-, kaon0L)")
+parser.add_argument("--output", dest='output', default="twoParticleEvents.root", required=False, help="Output file name")
+parser.add_argument("--particles", dest='particles', nargs='+', type=str, default=['pi-','kaon0L'], required=False, help="Particles (pi-, kaon0L)")
 parser.add_argument("--energies", dest='energies', nargs='+', type=float, default=[10, 10], required=False, help='Energies of particles in GeV')
 parser.add_argument("--thetaMin", dest='thetaMin', type=float, default=0., required=False, help='Min theta angle of the first particle in deg')
 parser.add_argument("--thetaMax", dest='thetaMax', type=float, default=0., required=False, help='Max theta angle of the first particle in deg')
@@ -72,8 +78,7 @@ def generate_second_particle(phi1, theta1, opening_angle):
 # --- Configuration ---
 mc_particle_collection_name = "MCParticles"
 
-print("--- Correcting podio file for edm4hep Collections ---")
-
+print("--- Creating podio file for edm4hep Collections ---")
 # Create a podio writer for the output file
 writer = podio.root_io.Writer(args.output)
 

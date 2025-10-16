@@ -10,14 +10,15 @@ parser = argparse.ArgumentParser(description='Process some parameters')
 parser.add_argument("--inputDir", dest='inputDir', default='', required=False, help="Input SIM files directory")
 parser.add_argument("--outputDir", dest='outputDir', default='', required=True, help="Output directory")
 parser.add_argument("--outputDest", dest='outputDest', default='', required=True, help="Output destination")
+parser.add_argument("--seed", dest='seed', type=int, default=1234, required=False, help="Random seed")
 parser.add_argument("--energy",dest='energy', nargs='+', type=int, required=True, help='Energy values')
 parser.add_argument("--theta",dest='theta', nargs='+', type=int, required=True, help='Theta values')
 parser.add_argument("--particle", dest='particle', default='', required=True, help="Particle [e-,pi-,kaon0L]")
 parser.add_argument("--numberOfEvents", dest='nevts', type=int, default=2500, required=False, help="Number of events")
 parser.add_argument("--run", dest='run', default='', required=True, help="ddsim or k4run")
 parser.add_argument("--HCalOnly", dest='hcalonly', action='store_true', default=False, required=False, help="Run HCal-standalone")
-parser.add_argument("--twoParticlesEvent", dest='twoParticlesEvent', action='store_true', default=False, required=False, help="Two particles events")
-parser.add_argument("--alpha", dest='alpha', type=float, default=5, required=False, help="Opening angle for two particles event in deg")
+parser.add_argument("--twoParticleEvents", dest='twoParticleEvents', action='store_true', default=False, required=False, help="Two-particle events")
+parser.add_argument("--alpha", dest='alpha', type=float, default=5, required=False, help="Opening angle for two-particle event in deg")
 parser.add_argument("--pandora", dest='pandora', action='store_true', default=False, required=False, help="Run pandoraPFA")
 parser.add_argument("--jobFlavour", dest='jobFlavour', default="workday", required=False, help="HTCondor JobFlavour")
 parser.add_argument("--xrd", dest='xrd', action='store_true', default=True, required=False, help="Copy output using XRootD")
@@ -41,7 +42,7 @@ if args.hcalonly: hcalonly = '_HCalOnly_'
 scriptName = 'empty.sh'
 
 #####
-if args.run == 'ddsim' and not args.twoParticlesEvent:
+if args.run == 'ddsim' and not args.twoParticleEvents:
   outputName = f'ALLEGRO{hcalonly}ddsim_{particleDict[particle]}_E'
   scriptName = f'run_ddsim{hcalonly}{particleDict[particle]}'
   condor_commands = []
@@ -101,13 +102,13 @@ if args.run == 'ddsim' and not args.twoParticlesEvent:
   bash_commands+= [f'mkdir {args.outputDir} && mv ALLEGRO*ddsim*root {args.outputDir}/']
 
 ######
-if args.run == 'ddsim' and args.twoParticlesEvent:
-  outputName = f'ALLEGRO_ddsim_TwoParticlesEvent_alpha{args.alpha}_E{energy[0]}'
-  scriptName = f'run_ddsim_TwoParticlesEvent_alpha{args.alpha}'
+if args.run == 'ddsim' and args.twoParticleEvents:
+  outputName = f'ALLEGRO_ddsim_alpha{args.alpha}_pion_E{energy[0]}_K0L_E{energy[1]}'
+  scriptName = f'run_ddsim_alpha{args.alpha}'
   condor_commands = []
-  if len(energy) == 1 and len(theta) > 1:
+  if len(energy) == 2:
      condor_commands.append('queue %s' % len(theta))
-     scriptName += f'_theta_E{energy[0]}.sh'
+     scriptName += f'_theta_pion_E{energy[0]}_K0L_E{energy[1]}.sh'
      bash_commands = [
       '#!/bin/bash',
       'echo "" > empty.file',
@@ -118,13 +119,13 @@ if args.run == 'ddsim' and args.twoParticlesEvent:
       'theta=`echo $theta | cut -d " " -f $N`',
      ]
 
-     bash_commands+=[f'python TwoParticlesGun.py --nevents {args.nevts} --alpha {args.alpha} --thetaMin ${{theta}} --thetaMax ${{theta}} --energies {energy[0]} {energy[0]}']
-     bash_commands+=[f'ddsim --inputFiles TwoParticlesEvent.root --numberOfEvents {args.nevts} --outputFile {outputName}_theta${{theta}}.root --compactFile $K4GEO/FCCee/ALLEGRO/compact/ALLEGRO_o1_v03/ALLEGRO_o1_v03.xml']
+     bash_commands+=[f'python twoParticleGun.py --nevents {args.nevts} --alpha {args.alpha} --thetaMin ${{theta}} --thetaMax ${{theta}} --energies {energy[0]} {energy[1]}']
+     bash_commands+=[f'ddsim --inputFiles twoParticleEvents.root --random.enableEventSeed --random.seed {args.seed} --numberOfEvents {args.nevts} --outputFile {outputName}_theta${{theta}}.root --compactFile $K4GEO/FCCee/ALLEGRO/compact/ALLEGRO_o1_v03/ALLEGRO_o1_v03.xml']
 
   bash_commands+= [f'mkdir {args.outputDir} && mv ALLEGRO*ddsim*root {args.outputDir}/']
 
 ######
-if args.run == 'k4run' and not args.twoParticlesEvent:
+if args.run == 'k4run' and not args.twoParticleEvents:
   inputName = f'{args.inputDir}/ALLEGRO{hcalonly}ddsim_{particleDict[particle]}_E'
   outputName = f'ALLEGRO{hcalonly}k4run_{particleDict[particle]}_E'
   scriptName = f'run_k4run{hcalonly}{particleDict[particle]}'
@@ -206,17 +207,14 @@ if args.run == 'k4run' and not args.twoParticlesEvent:
   bash_commands+= [f'mkdir {args.outputDir} && mv ALLEGRO*k4run*root {args.outputDir}/']
 
 ######
-if args.run == 'k4run' and args.twoParticlesEvent:
-  outputName = f'ALLEGRO_ddsim_TwoParticlesEvent_alpha{args.alpha}_E{energy[0]}'
-  scriptName = f'run_ddsim_TwoParticlesEvent_alpha{args.alpha}'
-
-  inputName = f'{args.inputDir}/ALLEGRO_ddsim_TwoParticlesEvent_alpha{args.alpha}_E{energy[0]}'
-  outputName = f'ALLEGRO_k4run_TwoParticlesEvent_alpha{args.alpha}_E{energy[0]}'
-  scriptName = f'run_k4run_TwoParticlesEvent_alpha{args.alpha}'
+if args.run == 'k4run' and args.twoParticleEvents:
+  inputName = f'{args.inputDir}/ALLEGRO_ddsim_alpha{args.alpha}_pion_E{energy[0]}_K0L_E{energy[1]}'
+  outputName = f'ALLEGRO_k4run_alpha{args.alpha}_pion_E{energy[0]}_K0L_E{energy[1]}'
+  scriptName = f'run_k4run_alpha{args.alpha}'
   condor_commands = []
-  if len(energy) == 1 and len(theta) > 1:
+  if len(energy) == 2:
      condor_commands.append('queue %s' % len(theta))
-     scriptName += f'_theta_E{energy[0]}.sh'
+     scriptName += f'_theta_pion_E{energy[0]}_K0L_E{energy[1]}.sh'
      bash_commands = [
       '#!/bin/bash',
       'echo "" > empty.file',

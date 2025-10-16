@@ -3,7 +3,7 @@ if [ "$1" == "ddsim" ]; then
 outputDest="root://128.141.173.81:1094//home/data/FCC/Sim/"
 outputDir="Resolution"
 energy="2 3 4 5 7 10 13 20 30 50 80 100 150 180"
-theta="88 83 78 73 63 58 53 48 43 38 33 28 23 18"
+theta="88 83 78 73 63 58 53 48 43 38 33 28 23"
 
 # ECal+HCal Barrel
 python python/submitJobs.py --energy ${energy} --theta 68 --particle pi- --numberOfEvents 10000 --outputDest ${outputDest} --outputDir ${outputDir} --run ddsim  --jobFlavour tomorrow
@@ -31,7 +31,7 @@ inputDir="root://128.141.173.81:1094//home/data/FCC/Sim/Resolution"
 outputDest="root://128.141.173.81:1094//home/data/FCC/Reco/"
 outputDir="Resolution"
 energy="2 3 4 5 7 10 13 20 30 50 80 100 150 180"
-theta="88 83 78 73 68 63 58 53 48 43 38 33 28 23 18"
+theta="88 83 78 73 68 63 58 53 48 43 38 33 28 23"
 
 # ECal+HCal Barrel | 180 GeV pion is missing
 python python/submitJobs.py --energy ${energy} --particle pi- --theta 68 --inputDir ${inputDir} --outputDir ${outputDir} --outputDest ${outputDest} --run k4run

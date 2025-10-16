@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import os
 import math
 import time
 import ROOT as root
@@ -7,6 +8,8 @@ from array import array
 import numpy as np
 
 def plot(hist, opt):
+    if not os.path.exists('plots'):
+      os.makedirs('plots')
     ######################
     Logy = False
     Logx = False
@@ -73,21 +76,48 @@ def plot(hist, opt):
     hist.GetYaxis().SetLabelOffset(0.005);
     hist.GetYaxis().SetLabelSize(0.055);
 
-    hist.Draw("E1X0")
-    ATLAS_LABEL(0.56,0.85,"Simulation",0.2)
+    if hasattr(opt, 'DrawOpt'):
+      hist.Draw(opt.DrawOpt)
+    else: hist.Draw("E1X0")
+
+    if hasattr(opt, 'Hists'):
+      hists = opt.Hists
+      markers = [20,21,22,23]
+      colors = [1,Color(0),Color(1),Color(2)]
+      leg = root.TLegend(0.18,0.75,0.38,0.95);
+      leg.SetHeader("");
+      leg.SetFillColor(0);
+      leg.SetFillStyle(0);
+      leg.SetShadowColor(0);
+      leg.SetLineColor(0);
+      leg.SetLineWidth(0);
+      leg.SetTextSize(0.045);
+      leg.SetTextFont(42);
+
+      for i in range(0,len(hists)):
+        hists[i].SetLineColor(colors[i])
+        hists[i].SetMarkerColor(colors[i])
+        hists[i].SetMarkerStyle(markers[i])
+        hists[i].SetMarkerSize(1.5)
+        hists[i].Draw("same hist")
+        leg.AddEntry(hists[i],hists[i].GetTitle(),"f");
+      leg.Draw();
+
+    ALLEGRO_LABEL(0.56,0.85,"Simulation",0.2)
     for i in range(len(labels)):
       myText( 0.56,0.842-(i+1)*0.055,1,"#scale[1]{%s}" % labels[i]);
-
 
     if hasattr(opt, 'Function'):
       if opt.Function:
         opt.Function.SetLineColor(Color(0))
         opt.Function.Draw("same")
 
-    c1.Print(name)
+    c1.Print(f'plots/{name}')
 
 
 def plotGraph(graphs, opt):
+    if not os.path.exists('plots'):
+      os.makedirs('plots')
     hist = graphs[0]
     ######################
     Logy = False
@@ -153,7 +183,7 @@ def plotGraph(graphs, opt):
     hist.SetMarkerSize(1.5);
 
     hist.Draw("AP")
-    ATLAS_LABEL(0.56,0.85,"Simulation",0.2)
+    ALLEGRO_LABEL(0.56,0.85,"Simulation",0.2)
     for i in range(len(labels)):
       myText( 0.56,0.842-(i+1)*0.055,1,"#scale[1]{%s}" % labels[i]);
 
@@ -201,11 +231,13 @@ def plotGraph(graphs, opt):
       leg.AddEntry(opt.Function[0],opt.Function[1],"l");
       leg.Draw()
 
-    c1.Print(name)
+    c1.Print(f'plots/{name}')
 
 
 
 def plotCompare(hist0 ,hist1, opt, hist2 = [None,None]):
+    if not os.path.exists('plots'):
+      os.makedirs('plots')
     h0 = hist0[0]
     h1 = hist1[0]
     h2 = hist2[0]
@@ -351,7 +383,7 @@ def plotCompare(hist0 ,hist1, opt, hist2 = [None,None]):
       h2.Draw("same");
 
 
-    ATLAS_LABEL(0.59,0.85,"Internal",0.2)
+    ALLEGRO_LABEL(0.59,0.85,"Internal",0.2)
     for i in range(len(labels)):
       myText( 0.59,0.842-(i+1)*0.055,1,"#scale[1]{%s}" % labels[i]);
 
@@ -546,7 +578,7 @@ def Color(sequence_number):
   color_sequence = ["#3f90da","#ffa90e","#bd1f01","#94a4a2","#832db6","#a96b59","#e76300","#b9ac70","#717581","#92dadd"];
   return root.TColor.GetColor( color_sequence[ sequence_number%10 ] )
 
-def ATLAS_LABEL(x, y, label = "Simulation", offset = 0.08):
+def ALLEGRO_LABEL(x, y, label = "Simulation", offset = 0.08):
     l = root.TLatex()  #l.SetTextAlign(12); l.SetTextSize(tsize);
     l.SetNDC()
     l.SetTextFont(62)
